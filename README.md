@@ -135,3 +135,20 @@ git push --tags
 The workflow will build `Unijoy-Installer-1.0.0.pkg` and attach it to a new
 release named `Unijoy v1.0.0`. You can also run the workflow manually from
 the Actions tab (it will produce an artifact without creating a release).
+
+## Credits
+
+- **Unijoy keyboard layout** — designed by [Ekushey](https://ekushey.org/) project. All credit for the layout itself, the character placement, and the original artwork belongs to them.
+- **macOS port and installer** — maintained by [@milon](https://github.com/milon).
+- **License** — this repository packages the Unijoy layout for macOS; the layout itself remains the work of its original authors. Please refer to the [Ekushey project](https://ekushey.org/) for licensing of the layout.
+- Inspired by [UniJoy_osx](https://github.com/nuxrif/UniJoy_osx) by Sharif Ahammed
+
+## Contact
+
+Found a bug? Have a suggestion? Want to contribute?
+
+- **Issues & feature requests** — please open a ticket on the
+  [GitHub issue tracker](https://github.com/milon/macos-unijoy/issues).
+- **Pull requests** — welcome! Fork the repo, make your changes, and open
+  a PR against `master`.
+- **Maintainer** — [@milon on GitHub](https://github.com/milon).
