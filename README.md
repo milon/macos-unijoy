@@ -4,7 +4,41 @@
 
 ## Layout
 
-![Layout Screenshot](/screenshots/layout.jpg)
+**Default layer**
+
+![Unijoy default layout](screenshots/unijoy-unicode.svg)
+
+**With Option (Alt) held**
+
+![Unijoy layout with Option held](screenshots/unijoy-unicode-alt.svg)
+
+> The diagrams above show the original Unijoy character placements. The
+> `` ` ``/`~` key (top-left, just below `Esc`) has been remapped — see
+> [Special characters](#special-characters) below.
+
+## Special characters
+
+The `` ` ``/`~` key is overloaded to put the four most useful "non-letter"
+Bengali typing helpers on a single physical key:
+
+| Keystroke                                | Output                          | Codepoint |
+|------------------------------------------|---------------------------------|-----------|
+| `` ` ``                                  | **ZWNJ** (Zero Width Non-Joiner) | `U+200C`  |
+| `Shift` + `` ` ``                        | **ZWJ** (Zero Width Joiner)      | `U+200D`  |
+| `⌥ Option` + `` ` ``                     | `‘` (left single quote)          | `U+2018`  |
+| `Shift` + `⌥ Option` + `` ` ``           | `’` (right single quote)         | `U+2019`  |
+
+ZWNJ is essential for breaking incorrect conjunct formation. For example,
+to type **র‌্যাব** (RAB) you need a ZWNJ between `র` and the `্য` cluster,
+otherwise `র + ্ + য` renders as a *reph* (**র্য**):
+
+```
+V   ` Shift+Z  F  H
+র   ‌  ্য       া  ব     →  র‌্যাব
+```
+
+> Backtick `` ` `` and tilde `~` are no longer reachable from this layout.
+> Switch to a US ABC input source momentarily if you need them.
 
 ## Installation
 
