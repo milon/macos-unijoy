@@ -80,26 +80,26 @@ jobs:
           KEY_PATH="$RUNNER_TEMP/AuthKey_${AC_API_KEY_ID}.p8"
           echo "$AC_API_KEY_P8" > "$KEY_PATH"
 
-          xcrun notarytool submit dist/UniJoy-Installer.pkg \
+          xcrun notarytool submit dist/Unijoy-Installer.pkg \
             --key "$KEY_PATH" \
             --key-id "$AC_API_KEY_ID" \
             --issuer "$AC_API_ISSUER_ID" \
             --wait
 
-          xcrun stapler staple dist/UniJoy-Installer.pkg
+          xcrun stapler staple dist/Unijoy-Installer.pkg
           rm -f "$KEY_PATH"
 
       - name: Rename artifact with version
         id: artifact
         run: |
-          ARTIFACT="dist/UniJoy-Installer-${{ steps.version.outputs.version }}.pkg"
-          mv dist/UniJoy-Installer.pkg "$ARTIFACT"
+          ARTIFACT="dist/Unijoy-Installer-${{ steps.version.outputs.version }}.pkg"
+          mv dist/Unijoy-Installer.pkg "$ARTIFACT"
           echo "path=${ARTIFACT}" >> "$GITHUB_OUTPUT"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UniJoy-Installer-${{ steps.version.outputs.version }}
+          name: Unijoy-Installer-${{ steps.version.outputs.version }}
           path: ${{ steps.artifact.outputs.path }}
           if-no-files-found: error
 
@@ -107,7 +107,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          name: UniJoy ${{ github.ref_name }}
+          name: Unijoy ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
           files: ${{ steps.artifact.outputs.path }}

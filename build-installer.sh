@@ -1,21 +1,21 @@
 #!/bin/bash
 #
-# Builds a macOS .pkg installer for the UniJoy keyboard layout.
+# Builds a macOS .pkg installer for the Unijoy keyboard layout.
 #
-# Output: dist/UniJoy-Installer.pkg
+# Output: dist/Unijoy-Installer.pkg
 #
 # Usage:
 #   ./build-installer.sh
 #
 # Optional environment variables:
 #   VERSION              Version string baked into the package (default: 1.0)
-#   IDENTIFIER           Package identifier (default: com.milon.UniJoy)
+#   IDENTIFIER           Package identifier (default: com.milon.Unijoy)
 #   SIGN_IDENTITY        Developer ID Installer identity for signing (optional)
 
 set -euo pipefail
 
 VERSION="${VERSION:-1.0}"
-IDENTIFIER="${IDENTIFIER:-com.milon.UniJoy}"
+IDENTIFIER="${IDENTIFIER:-com.milon.Unijoy}"
 SIGN_IDENTITY="${SIGN_IDENTITY:-}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,9 +23,9 @@ BUILD_DIR="$SCRIPT_DIR/build"
 DIST_DIR="$SCRIPT_DIR/dist"
 PAYLOAD_DIR="$BUILD_DIR/payload"
 RESOURCES_DIR="$SCRIPT_DIR/installer-resources"
-COMPONENT_PKG="$BUILD_DIR/UniJoy-component.pkg"
+COMPONENT_PKG="$BUILD_DIR/Unijoy-component.pkg"
 DISTRIBUTION_XML="$BUILD_DIR/distribution.xml"
-FINAL_PKG="$DIST_DIR/UniJoy-Installer.pkg"
+FINAL_PKG="$DIST_DIR/Unijoy-Installer.pkg"
 
 KEYLAYOUT_FILE="$SCRIPT_DIR/unijoy.keylayout"
 ICON_FILE="$SCRIPT_DIR/unijoy.icns"
@@ -76,7 +76,7 @@ echo "Generating distribution XML..."
 cat > "$DISTRIBUTION_XML" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="2">
-    <title>UniJoy Bengali Keyboard Layout</title>
+    <title>Unijoy Bengali Keyboard Layout</title>
     <organization>com.milon</organization>
     <welcome    file="welcome.html"    mime-type="text/html"/>
     <conclusion file="conclusion.html" mime-type="text/html"/>
@@ -91,7 +91,7 @@ cat > "$DISTRIBUTION_XML" <<EOF
     <choice id="${IDENTIFIER}" visible="false">
         <pkg-ref id="${IDENTIFIER}"/>
     </choice>
-    <pkg-ref id="${IDENTIFIER}" version="${VERSION}" onConclusion="none">UniJoy-component.pkg</pkg-ref>
+    <pkg-ref id="${IDENTIFIER}" version="${VERSION}" onConclusion="none">Unijoy-component.pkg</pkg-ref>
 </installer-gui-script>
 EOF
 
