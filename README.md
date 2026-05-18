@@ -42,7 +42,25 @@ V   ` Shift+Z  F  H
 
 ## Installation
 
-### Option 1: Installer Package (recommended)
+### Option 1: Homebrew (recommended)
+
+If you have [Homebrew](https://brew.sh/) installed:
+
+```bash
+brew install --cask milon/macos-unijoy/macos-unijoy
+```
+
+This installs `unijoy.keylayout` and `unijoy.icns` directly into
+`/Library/Keyboard Layouts/` via Homebrew's `keyboard_layout` artifact —
+the `.pkg` from Option 2 is not involved, so there is no Gatekeeper prompt.
+
+To uninstall later:
+
+```bash
+brew uninstall --cask macos-unijoy
+```
+
+### Option 2: Installer Package
 
 Download `Unijoy-Installer.pkg` from the [latest release](https://github.com/milon/macos-unijoy/releases),
 double-click it, and follow the on-screen steps. macOS will ask for your
@@ -87,7 +105,7 @@ After the installer finishes:
 > If the new layout does not appear, log out and back in (or restart) to refresh
 > the system input-source list.
 
-### Option 2: One-line shell installer
+### Option 3: One-line shell installer
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/milon/macos-unijoy/master/install.sh)"
@@ -96,11 +114,11 @@ After the installer finishes:
 This script clones the repo and copies the layout files using `sudo`. It
 requires `git` (pre-installed on macOS) and prompts for your sudo password.
 
-### Option 3: Manual installation
+### Option 4: Manual installation
 
 - Download `unijoy.keylayout` and `unijoy.icns`.
 - Copy both files into `/Library/Keyboard Layouts/` using Finder.
-- Follow the post-install steps from Option 1 above to enable the layout.
+- Follow the post-install steps from Option 2 above to enable the layout.
 
 ## Building the installer from source
 

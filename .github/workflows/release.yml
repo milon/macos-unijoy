@@ -111,3 +111,64 @@ jobs:
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
           files: ${{ steps.artifact.outputs.path }}
+
+      - name: Bump Homebrew cask in tap
+        if: startsWith(github.ref, 'refs/tags/v') && env.TAP_PUSH_TOKEN != ''
+        env:
+          TAP_PUSH_TOKEN: ${{ secrets.TAP_PUSH_TOKEN }}
+          TAP_REPO: ${{ vars.HOMEBREW_TAP_REPO || 'milon/homebrew-macos-unijoy' }}
+          CASK_PATH: ${{ vars.HOMEBREW_CASK_PATH || 'Casks/macos-unijoy.rb' }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          # The cask uses `keyboard_layout` to install unijoy.keylayout and
+          # unijoy.icns directly from GitHub's auto-generated source tarball,
+          # so we sha that tarball (not the .pkg).
+          SRC_URL="https://github.com/${GITHUB_REPOSITORY}/archive/refs/tags/${TAG_NAME}.tar.gz"
+          SRC_TARBALL="$RUNNER_TEMP/source.tar.gz"
+
+          echo "Downloading source tarball: $SRC_URL"
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 -o "$SRC_TARBALL" "$SRC_URL"; then
+              break
+            fi
+            echo "Attempt $attempt failed; sleeping before retry..." >&2
+            sleep 5
+          done
+          [[ -s "$SRC_TARBALL" ]] || { echo "::error::Failed to download source tarball" >&2; exit 1; }
+
+          SHA256=$(shasum -a 256 "$SRC_TARBALL" | awk '{print $1}')
+          echo "Bumping ${TAP_REPO}:${CASK_PATH} to ${VERSION} (sha256=${SHA256})"
+
+          WORK_DIR="$RUNNER_TEMP/tap"
+          rm -rf "$WORK_DIR"
+          git clone --depth=1 \
+            "https://x-access-token:${TAP_PUSH_TOKEN}@github.com/${TAP_REPO}.git" \
+            "$WORK_DIR"
+
+          CASK_FILE="$WORK_DIR/$CASK_PATH"
+          if [[ ! -f "$CASK_FILE" ]]; then
+            echo "::error::Cask file ${CASK_PATH} not found in ${TAP_REPO}." >&2
+            echo "Initialize the tap by copying homebrew-tap/Casks/macos-unijoy.rb into the tap repo first." >&2
+            exit 1
+          fi
+
+          # Update the first version "..." and sha256 "..." lines in the cask.
+          /usr/bin/sed -i '' -E \
+            -e "1,/^[[:space:]]*version \"/ s|^([[:space:]]*version \").*(\")|\\1${VERSION}\\2|" \
+            -e "1,/^[[:space:]]*sha256 \"/  s|^([[:space:]]*sha256 \").*(\")|\\1${SHA256}\\2|" \
+            "$CASK_FILE"
+
+          cd "$WORK_DIR"
+          if git diff --quiet -- "$CASK_PATH"; then
+            echo "Cask already at ${VERSION} with sha256 ${SHA256}; nothing to do."
+            exit 0
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$CASK_PATH"
+          git commit -m "macos-unijoy ${VERSION}"
+          git push origin HEAD
