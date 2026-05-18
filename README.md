@@ -1,6 +1,9 @@
 # Unijoy Keyboard Layout for macOS
 
-[Unijoy](https://ekushey.org/keyboard-layout/ekusheyr-shadhinota-unijoy-layout/) is one of the most popular Bengali Keyboard Layout. This is an installer for unijoy keyboard kayout for macOS.
+[Unijoy](https://ekushey.org/keyboard-layout/ekusheyr-shadhinota-unijoy-layout/)
+is one of the most popular Bengali keyboard layouts. This repository packages
+it for macOS and ships it through Homebrew, a `.pkg` installer, and a small
+shell installer.
 
 ## Layout
 
@@ -42,6 +45,10 @@ V   ` Shift+Z  F  H
 
 ## Installation
 
+Pick whichever method you're most comfortable with. All four install the
+same two files (`unijoy.keylayout` and `unijoy.icns`) into
+`/Library/Keyboard Layouts/`.
+
 ### Option 1: Homebrew (recommended)
 
 If you have [Homebrew](https://brew.sh/) installed:
@@ -50,9 +57,9 @@ If you have [Homebrew](https://brew.sh/) installed:
 brew install --cask milon/macos-unijoy/macos-unijoy
 ```
 
-This installs `unijoy.keylayout` and `unijoy.icns` directly into
-`/Library/Keyboard Layouts/` via Homebrew's `keyboard_layout` artifact —
-the `.pkg` from Option 2 is not involved, so there is no Gatekeeper prompt.
+Homebrew uses its `keyboard_layout` artifact to drop the files into place
+directly — the `.pkg` from Option 3 is not involved, so there is no
+Gatekeeper prompt.
 
 To uninstall later:
 
@@ -60,11 +67,22 @@ To uninstall later:
 brew uninstall --cask macos-unijoy
 ```
 
-### Option 2: Installer Package
+### Option 2: One-line shell installer
 
-Download `Unijoy-Installer.pkg` from the [latest release](https://github.com/milon/macos-unijoy/releases),
-double-click it, and follow the on-screen steps. macOS will ask for your
-administrator password so the installer can write to `/Library/Keyboard Layouts/`.
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/milon/macos-unijoy/master/install.sh)"
+```
+
+The script clones this repository to a temporary directory and copies the
+layout files using `sudo`. It requires `git` (pre-installed on macOS) and
+prompts for your sudo password.
+
+### Option 3: Installer package (`.pkg`)
+
+Download `Unijoy-Installer.pkg` from the
+[latest release](https://github.com/milon/macos-unijoy/releases), double-click
+it, and follow the on-screen steps. macOS will ask for your administrator
+password so the installer can write to `/Library/Keyboard Layouts/`.
 
 > [!IMPORTANT]
 > **Seeing _"Apple could not verify … is free of malware"_?**
@@ -94,7 +112,15 @@ administrator password so the installer can write to `/Library/Keyboard Layouts/
 > xattr -d com.apple.quarantine ~/Downloads/Unijoy-Installer.pkg
 > ```
 
-After the installer finishes:
+### Option 4: Manual installation
+
+- Download `unijoy.keylayout` and `unijoy.icns` from the repository root.
+- Copy both files into `/Library/Keyboard Layouts/` using Finder.
+- Follow the post-install steps below to enable the layout.
+
+## Enabling the layout
+
+After any of the installation methods above:
 
 1. Open **System Settings → Keyboard**.
 2. Under **Input Sources**, click **Edit…**.
@@ -102,23 +128,8 @@ After the installer finishes:
 4. Choose **Other**, select **বাংলা (Unijoy)**, and click **Add**.
 5. *(Optional)* Set a keyboard shortcut from the **Shortcuts** tab.
 
-> If the new layout does not appear, log out and back in (or restart) to refresh
-> the system input-source list.
-
-### Option 3: One-line shell installer
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/milon/macos-unijoy/master/install.sh)"
-```
-
-This script clones the repo and copies the layout files using `sudo`. It
-requires `git` (pre-installed on macOS) and prompts for your sudo password.
-
-### Option 4: Manual installation
-
-- Download `unijoy.keylayout` and `unijoy.icns`.
-- Copy both files into `/Library/Keyboard Layouts/` using Finder.
-- Follow the post-install steps from Option 2 above to enable the layout.
+> If the new layout does not appear, log out and back in (or restart) to
+> refresh the system input-source list.
 
 ## Building the installer from source
 
@@ -140,32 +151,45 @@ macOS and the Command Line Tools.
 
 ## Releasing
 
-A GitHub Actions workflow at `.github/workflows/release.yml` builds the
-installer on `macos-latest` and publishes it to GitHub Releases.
+A GitHub Actions workflow at `.github/workflows/release.yml` runs on every
+`v*` tag push and:
+
+1. Builds `Unijoy-Installer-X.Y.Z.pkg` on `macos-latest`.
+2. Publishes it to a new GitHub Release named `Unijoy vX.Y.Z`.
+3. Bumps the Homebrew cask in
+   [`milon/homebrew-macos-unijoy`](https://github.com/milon/homebrew-macos-unijoy)
+   with the new version and source-tarball SHA256.
 
 To cut a release:
 
 ```bash
-git tag v1.0.0 -m '<Release Message>'
+git tag v1.2.3 -m '<Release Message>'
 git push --tags
 ```
 
-The workflow will build `Unijoy-Installer-1.0.0.pkg` and attach it to a new
-release named `Unijoy v1.0.0`. You can also run the workflow manually from
-the Actions tab (it will produce an artifact without creating a release).
+The cask bump step requires a `TAP_PUSH_TOKEN` repository secret — a
+fine-grained PAT with **Contents: Read and write** permission on the tap
+repo. Without it, the release still ships the `.pkg`, but the Homebrew tap
+will not auto-update.
 
 ## Credits
 
-- **Unijoy keyboard layout** — designed by [Ekushey](https://ekushey.org/) project. All credit for the layout itself, the character placement, and the original artwork belongs to them.
-- **macOS port and installer** — maintained by [@milon](https://github.com/milon).
-- **License** — this repository packages the Unijoy layout for macOS; the layout itself remains the work of its original authors. Please refer to the [Ekushey project](https://ekushey.org/) for licensing of the layout.
-- Inspired by [UniJoy_osx](https://github.com/nuxrif/UniJoy_osx) by Sharif Ahammed
+- **Unijoy keyboard layout** — designed by the [Ekushey](https://ekushey.org/)
+  project. All credit for the layout itself, the character placement, and the
+  original artwork belongs to them.
+- **macOS port and installer** — maintained by
+  [@milon](https://github.com/milon).
+- **License** — this repository packages the Unijoy layout for macOS; the
+  layout itself remains the work of its original authors. Please refer to the
+  [Ekushey project](https://ekushey.org/) for licensing of the layout.
+- Inspired by [UniJoy_osx](https://github.com/nuxrif/UniJoy_osx) by Sharif
+  Ahammed.
 
 ## Contact
 
 Found a bug? Have a suggestion? Want to contribute?
 
-- **Issues & feature requests** — please open a ticket on the
+- **Issues & feature requests** — open a ticket on the
   [GitHub issue tracker](https://github.com/milon/macos-unijoy/issues).
 - **Pull requests** — welcome! Fork the repo, make your changes, and open
   a PR against `master`.
