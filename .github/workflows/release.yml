@@ -151,7 +151,7 @@ jobs:
           CASK_FILE="$WORK_DIR/$CASK_PATH"
           if [[ ! -f "$CASK_FILE" ]]; then
             echo "::error::Cask file ${CASK_PATH} not found in ${TAP_REPO}." >&2
-            echo "Initialize the tap by copying homebrew-tap/Casks/macos-unijoy.rb into the tap repo first." >&2
+            echo "Make sure the tap repo has been seeded with an initial Casks/macos-unijoy.rb." >&2
             exit 1
           fi
 
