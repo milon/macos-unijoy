@@ -19,19 +19,6 @@ jobs:
     name: Build .pkg installer
     runs-on: macos-latest
 
-    # Hoist optional secrets to the job level so step-level `if:` checks
-    # like `env.TAP_PUSH_TOKEN != ''` can see them. A step's own `env:`
-    # block is NOT visible to that step's `if:` expression — only
-    # workflow- and job-level env is.
-    env:
-      MACOS_INSTALLER_CERT_P12: ${{ secrets.MACOS_INSTALLER_CERT_P12 }}
-      MACOS_INSTALLER_CERT_PASSWORD: ${{ secrets.MACOS_INSTALLER_CERT_PASSWORD }}
-      MACOS_INSTALLER_SIGN_IDENTITY: ${{ secrets.MACOS_INSTALLER_SIGN_IDENTITY }}
-      AC_API_KEY_P8: ${{ secrets.AC_API_KEY_P8 }}
-      AC_API_KEY_ID: ${{ secrets.AC_API_KEY_ID }}
-      AC_API_ISSUER_ID: ${{ secrets.AC_API_ISSUER_ID }}
-      TAP_PUSH_TOKEN: ${{ secrets.TAP_PUSH_TOKEN }}
-
     steps:
       - name: Check out source
         uses: actions/checkout@v5
@@ -49,51 +36,12 @@ jobs:
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Building version: ${VERSION}"
 
-      - name: Import signing certificate
-        if: env.MACOS_INSTALLER_CERT_P12 != ''
-        run: |
-          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
-          KEYCHAIN_PASSWORD="$(openssl rand -base64 24)"
-          CERT_PATH="$RUNNER_TEMP/installer-cert.p12"
-
-          echo "$MACOS_INSTALLER_CERT_P12" | base64 --decode > "$CERT_PATH"
-
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-
-          security import "$CERT_PATH" \
-            -P "$MACOS_INSTALLER_CERT_PASSWORD" \
-            -A -t cert -f pkcs12 \
-            -k "$KEYCHAIN_PATH"
-
-          security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
-
-          rm -f "$CERT_PATH"
-
       - name: Build installer
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          SIGN_IDENTITY: ${{ env.MACOS_INSTALLER_SIGN_IDENTITY }}
         run: |
           chmod +x ./build-installer.sh
           ./build-installer.sh
-
-      - name: Notarize installer
-        if: env.AC_API_KEY_P8 != ''
-        run: |
-          KEY_PATH="$RUNNER_TEMP/AuthKey_${AC_API_KEY_ID}.p8"
-          echo "$AC_API_KEY_P8" > "$KEY_PATH"
-
-          xcrun notarytool submit dist/Unijoy-Installer.pkg \
-            --key "$KEY_PATH" \
-            --key-id "$AC_API_KEY_ID" \
-            --issuer "$AC_API_ISSUER_ID" \
-            --wait
-
-          xcrun stapler staple dist/Unijoy-Installer.pkg
-          rm -f "$KEY_PATH"
 
       - name: Rename artifact with version
         id: artifact
@@ -119,14 +67,22 @@ jobs:
           files: ${{ steps.artifact.outputs.path }}
 
       - name: Bump Homebrew cask in tap
-        if: startsWith(github.ref, 'refs/tags/v') && env.TAP_PUSH_TOKEN != ''
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
+          TAP_PUSH_TOKEN: ${{ secrets.TAP_PUSH_TOKEN }}
           TAP_REPO: ${{ vars.HOMEBREW_TAP_REPO || 'milon/homebrew-macos-unijoy' }}
           CASK_PATH: ${{ vars.HOMEBREW_CASK_PATH || 'Casks/macos-unijoy.rb' }}
           VERSION: ${{ steps.version.outputs.version }}
           TAG_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
+
+          if [[ -z "${TAP_PUSH_TOKEN:-}" ]]; then
+            echo "::error::TAP_PUSH_TOKEN secret is empty or unset; cannot bump the tap." >&2
+            echo "Set it in repo Settings → Secrets and variables → Actions." >&2
+            exit 1
+          fi
+          echo "TAP_PUSH_TOKEN is present (length=${#TAP_PUSH_TOKEN})"
 
           # The cask uses `keyboard_layout` to install unijoy.keylayout and
           # unijoy.icns directly from GitHub's auto-generated source tarball,
